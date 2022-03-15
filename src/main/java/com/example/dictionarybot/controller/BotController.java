@@ -56,24 +56,25 @@ public class BotController {
                         userService.saveUser(user);
                         sendBooksMenu(user);
                     } else if (user != null) {
-                        if (text.startsWith("/create_book") && user.getRole().equals(Role.ADMIN) && user.getMenu().equals(Menu.MAIN)) {
-                            text = text.replace("/create_book", "").trim();
+                        if (text.startsWith("/create") && user.getRole().equals(Role.ADMIN) && user.getMenu().equals(Menu.MAIN)) {
+                            text = text.replace("/create", "").trim();
                             if (bookService.save(text)) {
                                 botUtility.sendMessage("Kitob saqlandi!", user.getChatId());
                             } else {
                                 botUtility.sendMessage("Bunday kitob mavjud!", user.getChatId());
                             }
 
-                        } else if (text.startsWith("/create_unit") && user.getRole().equals(Role.ADMIN) && user.getMenu().equals(Menu.BOOK_VIEW)) {
-                            text = text.replace("/create_unit", "").trim();
+                        } else if (text.startsWith("/create") && user.getRole().equals(Role.ADMIN) && user.getMenu().equals(Menu.BOOK_VIEW)) {
+                            text = text.replace("/create", "").trim();
                             if (unitService.save(text, user.getSelectedBook())) {
                                 botUtility.sendMessage("Unit saqlandi!", user.getChatId());
                             } else {
                                 botUtility.sendMessage("Bunday unit mavjud!", user.getChatId());
                             }
 
-                        } else if (text.startsWith("/create_vocabulary") && user.getRole().equals(Role.ADMIN) && user.getMenu().equals(Menu.UNIT_TEST)) {
-                            text = text.replace("/create_vocabulary", "").trim();
+                        } else if ((text.startsWith("/create") || text.startsWith("#create")) && user.getRole().equals(Role.ADMIN) && user.getMenu().equals(Menu.UNIT_TEST)) {
+                            text = text.replace("/create", "").trim();
+                            text = text.replace("#create", "").trim();
                             String[] engUzb = text.split("\n");
                             if (vocabularyService.save(engUzb[0], engUzb[1], user.getSelectedUnit())) {
                                 botUtility.sendMessage("Lug'at saqlandi!", user.getChatId());
@@ -81,24 +82,24 @@ public class BotController {
                                 botUtility.sendMessage("Lug'at saqlanmadi!", user.getChatId());
                             }
 
-                        } else if (text.startsWith("/delete_book") && user.getRole().equals(Role.ADMIN) && user.getMenu().equals(Menu.MAIN)) {
-                            text = text.replace("/delete_book", "").trim();
+                        } else if (text.startsWith("/delete") && user.getRole().equals(Role.ADMIN) && user.getMenu().equals(Menu.MAIN)) {
+                            text = text.replace("/delete", "").trim();
                             if (bookService.delete(text)) {
                                 botUtility.sendMessage("Kitob o'chirildi!", user.getChatId());
                             } else {
                                 botUtility.sendMessage("Kitob o'chirilmadi!", user.getChatId());
                             }
 
-                        } else if (text.startsWith("/delete_unit") && user.getRole().equals(Role.ADMIN) && user.getMenu().equals(Menu.BOOK_VIEW)) {
-                            text = text.replace("/delete_unit", "").trim();
+                        } else if (text.startsWith("/delete") && user.getRole().equals(Role.ADMIN) && user.getMenu().equals(Menu.BOOK_VIEW)) {
+                            text = text.replace("/delete", "").trim();
                             if (unitService.delete(user.getSelectedBook(),text)) {
                                 botUtility.sendMessage("Unit o'chirildi!", user.getChatId());
                             } else {
                                 botUtility.sendMessage("Unit o'chirilmadi!", user.getChatId());
                             }
 
-                        } else if (text.startsWith("/delete_vocabulary") && user.getRole().equals(Role.ADMIN) && user.getMenu().equals(Menu.UNIT_TEST)) {
-                            text = text.replace("/delete_vocabulary", "").trim();
+                        } else if (text.startsWith("/delete") && user.getRole().equals(Role.ADMIN) && user.getMenu().equals(Menu.UNIT_TEST)) {
+                            text = text.replace("/delete", "").trim();
                             if (vocabularyService.delete(user.getSelectedUnit(),text)) {
                                 botUtility.sendMessage("Lug'at o'chirildi!", user.getChatId());
                             } else {

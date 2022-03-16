@@ -209,7 +209,7 @@ public class BotController {
         }
         SendMessage sendMessage = new SendMessage(String.valueOf(user.getChatId()), "Kerakli darsni tanlang");
         ReplyKeyboardMarkup keyboardMarkup = botUtility.buildKeyboardButtons(units);
-        keyboardMarkup.setSelective(true);
+        keyboardMarkup.setOneTimeKeyboard(true);
         sendMessage.setReplyMarkup(keyboardMarkup);
         botUtility.sendMessage(sendMessage);
     }

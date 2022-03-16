@@ -146,27 +146,26 @@ public class BotController {
             }
             if (update.hasCallbackQuery()) {
                 User user = userService.getUser(update.getCallbackQuery().getFrom().getId());
-                if (user!=null){
+                if (user != null) {
                     String text = update.getCallbackQuery().getData().trim();
                     boolean isUzb = text.startsWith("#uzb");
                     if (isUzb) {
                         text = text.replace("#uzb", "").trim();
                     }
-                    if (update.getCallbackQuery().getMessage().getText().equals("\uD83C\uDFB2 Random word")) {
+                    if (text.equals("random_word")) {
                         Vocabulary vocabulary = user.getSelectedUnit() == null ?
                                 vocabularyService.getRandomWordByBook(user.getSelectedBook()) :
                                 vocabularyService.getRandomWord(user.getSelectedUnit());
                         sendInlineQuestion(user, vocabulary, Long.valueOf(update.getCallbackQuery().getMessage().getMessageId()));
-                    } else if (update.getCallbackQuery().getMessage().getText().equals("Javobini ko'rish")) {
+                    } else {
                         AnswerCallbackQuery answerCallbackQuery = new AnswerCallbackQuery(update.getCallbackQuery().getId());
                         if (isUzb) {
-                            answerCallbackQuery.setText(text.substring(0,1).toUpperCase()+text.substring(1));
-                        }
-                        else {
+                            answerCallbackQuery.setText(text.substring(0, 1).toUpperCase() + text.substring(1));
+                        } else {
                             Vocabulary vocabulary = user.getSelectedUnit() != null ?
                                     vocabularyService.findByUnit(user.getSelectedUnit(), text) :
                                     vocabularyService.findByBook(user.getSelectedBook(), text);
-                            answerCallbackQuery.setText(vocabulary.getUzb().substring(0,1).toUpperCase()+vocabulary.getUzb().substring(1));
+                            answerCallbackQuery.setText(vocabulary.getUzb().substring(0, 1).toUpperCase() + vocabulary.getUzb().substring(1));
                         }
                         answerCallbackQuery.setShowAlert(true);
                         botUtility.answerCallbackQuery(answerCallbackQuery);
@@ -221,7 +220,8 @@ public class BotController {
         List<InlineKeyboardButton> buttonRow2 = new ArrayList<>();
         InlineKeyboardButton button = new InlineKeyboardButton("Javobini ko'rish");
         InlineKeyboardButton button2 = new InlineKeyboardButton("\uD83C\uDFB2 Random word");
-        button.setCallbackData((isUzb ?"#uzb ":"")+vocabulary.getEng());
+        button2.setCallbackData("random_word");
+        button.setCallbackData((isUzb ? "#uzb " : "") + vocabulary.getEng());
         buttonRow.add(button);
         buttonRow2.add(button2);
         keyboard.add(buttonRow);

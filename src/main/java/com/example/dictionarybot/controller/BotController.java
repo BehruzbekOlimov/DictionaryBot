@@ -237,8 +237,16 @@ public class BotController {
         keyboard.add(buttonRow);
         keyboard.add(buttonRow2);
         markup.setKeyboard(keyboard);
-        SendMessage sendInlineMessage = new SendMessage(String.valueOf(user.getChatId()), !isUzb ? vocabulary.getEng().substring(0, 1).toUpperCase() + vocabulary.getEng().substring(1) :
-                vocabulary.getUzb().substring(0, 1).toUpperCase() + vocabulary.getUzb().substring(1));
+        String wordText;
+        if (isUzb) {
+            String[] wordList = vocabulary.getUzb().split(", ");
+            wordText = wordList[(int) Math.floor(wordList.length)];
+            wordText = wordText.substring(0, 1).toUpperCase() + wordText.substring(1);
+        } else {
+            wordText = vocabulary.getEng().substring(0, 1).toUpperCase() + vocabulary.getEng().substring(1);
+        }
+
+        SendMessage sendInlineMessage = new SendMessage(String.valueOf(user.getChatId()), wordText);
         sendInlineMessage.setReplyMarkup(markup);
         if (messageId != null)
             botUtility.sendMessage(sendInlineMessage, user.getChatId(), messageId);

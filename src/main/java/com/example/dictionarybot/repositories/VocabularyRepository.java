@@ -16,11 +16,18 @@ public interface VocabularyRepository extends JpaRepository<Vocabulary, Long> {
             nativeQuery = true
     )
     Vocabulary getRandomByUnit(Long id);
+
     @Query(
             value = "select * from vocabularies where unit_id in (select distinct id from units where book_id = ?1) order by random() limit 1",
             nativeQuery = true
     )
     Vocabulary getRandomByBook(Long id);
+
+    @Query(
+            value = "select * from vocabularies where unit_id in (select distinct id from units where book_id = ?1) and eng=?2 limit 1",
+            nativeQuery = true
+    )
+    Vocabulary findByBookAndEng(Long id, String eng);
 
     Optional<Vocabulary> findByUnitAndEng(Unit unit, String eng);
 }

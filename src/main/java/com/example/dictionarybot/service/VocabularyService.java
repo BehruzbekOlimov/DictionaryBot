@@ -43,4 +43,12 @@ public class VocabularyService {
             return false;
         }
     }
+
+    public Vocabulary findByUnit(Unit unit, String eng){
+        return vocabularyRepository.findByUnitAndEng(unit, eng).orElse(null);
+    }
+
+    public Vocabulary findByBook(Book book, String eng){
+        return vocabularyRepository.findByBookAndEng(book.getId(), eng);
+    }
 }

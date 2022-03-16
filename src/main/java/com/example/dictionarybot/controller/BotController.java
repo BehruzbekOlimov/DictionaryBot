@@ -121,7 +121,7 @@ public class BotController {
                                     sendUnitsMenu(user);
                                     break;
                                 case BOOK_VIEW:
-                                    if (text.equals("Random word")) {
+                                    if (text.equals("\uD83C\uDFB2 Random word")) {
                                         Vocabulary vocabulary = vocabularyService.getRandomWordByBook(user.getSelectedBook());
                                         sendInlineQuestion(user, vocabulary, null);
                                         break;
@@ -146,19 +146,32 @@ public class BotController {
             }
             if (update.hasCallbackQuery()) {
                 User user = userService.getUser(update.getCallbackQuery().getFrom().getId());
-                if (update.getCallbackQuery().getMessage().getText().equals("Random word")) {
-                    Vocabulary vocabulary = user.getSelectedUnit() == null ?
-                            vocabularyService.getRandomWordByBook(user.getSelectedBook()) :
-                            vocabularyService.getRandomWord(user.getSelectedUnit());
-                    sendInlineQuestion(user, vocabulary, Long.valueOf(update.getCallbackQuery().getMessage().getMessageId()));
-                } else if (update.getCallbackQuery().getMessage().getText().equals("Javobini ko'rish")) {
+                if (user!=null){
                     String text = update.getCallbackQuery().getData().trim();
-                    AnswerCallbackQuery answerCallbackQuery = new AnswerCallbackQuery(update.getCallbackQuery().getId());
-                    answerCallbackQuery.setText(text);
-                    answerCallbackQuery.setShowAlert(true);
-                    botUtility.answerCallbackQuery(answerCallbackQuery);
+                    boolean isUzb = text.startsWith("#uzb");
+                    if (isUzb) {
+                        text = text.replace("#uzb", "").trim();
+                    }
+                    if (update.getCallbackQuery().getMessage().getText().equals("\uD83C\uDFB2 Random word")) {
+                        Vocabulary vocabulary = user.getSelectedUnit() == null ?
+                                vocabularyService.getRandomWordByBook(user.getSelectedBook()) :
+                                vocabularyService.getRandomWord(user.getSelectedUnit());
+                        sendInlineQuestion(user, vocabulary, Long.valueOf(update.getCallbackQuery().getMessage().getMessageId()));
+                    } else if (update.getCallbackQuery().getMessage().getText().equals("Javobini ko'rish")) {
+                        AnswerCallbackQuery answerCallbackQuery = new AnswerCallbackQuery(update.getCallbackQuery().getId());
+                        if (isUzb) {
+                            answerCallbackQuery.setText(text.substring(0,1).toUpperCase()+text.substring(1));
+                        }
+                        else {
+                            Vocabulary vocabulary = user.getSelectedUnit() != null ?
+                                    vocabularyService.findByUnit(user.getSelectedUnit(), text) :
+                                    vocabularyService.findByBook(user.getSelectedBook(), text);
+                            answerCallbackQuery.setText(vocabulary.getUzb().substring(0,1).toUpperCase()+vocabulary.getUzb().substring(1));
+                        }
+                        answerCallbackQuery.setShowAlert(true);
+                        botUtility.answerCallbackQuery(answerCallbackQuery);
+                    }
                 }
-
             }
         } catch (
                 Exception e) {
@@ -181,7 +194,7 @@ public class BotController {
     private void sendUnitsMenu(User user) {
         List<Unit> unitList = unitService.getAllByBook(user.getSelectedBook());
         String[][] units = new String[(unitList.size() + 5) / 2][2];
-        units[(unitList.size() + 1) / 2][0] = "Random word";
+        units[(unitList.size() + 1) / 2][0] = "\uD83C\uDFB2 Random word";
         units[(unitList.size() + 3) / 2][0] = "⏫ Bosh sahifa";
         for (int i = 0; i < unitList.size(); i++) {
             units[i / 2][i % 2] = unitList.get(i).getName();
@@ -207,9 +220,8 @@ public class BotController {
         List<InlineKeyboardButton> buttonRow = new ArrayList<>();
         List<InlineKeyboardButton> buttonRow2 = new ArrayList<>();
         InlineKeyboardButton button = new InlineKeyboardButton("Javobini ko'rish");
-        InlineKeyboardButton button2 = new InlineKeyboardButton("Random word");
-        button.setCallbackData(isUzb ? vocabulary.getEng().substring(0, 1).toUpperCase() + vocabulary.getEng().substring(1) :
-                vocabulary.getUzb().substring(0, 1).toUpperCase() + vocabulary.getUzb().substring(1));
+        InlineKeyboardButton button2 = new InlineKeyboardButton("\uD83C\uDFB2 Random word");
+        button.setCallbackData((isUzb ?"#uzb ":"")+vocabulary.getEng());
         buttonRow.add(button);
         buttonRow2.add(button2);
         keyboard.add(buttonRow);

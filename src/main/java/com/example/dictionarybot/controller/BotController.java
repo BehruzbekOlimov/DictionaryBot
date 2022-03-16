@@ -11,7 +11,6 @@ import com.example.dictionarybot.service.UnitService;
 import com.example.dictionarybot.service.UserService;
 import com.example.dictionarybot.service.VocabularyService;
 import com.example.dictionarybot.utills.BotUtility;
-import com.vdurmont.emoji.EmojiParser;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -55,7 +54,7 @@ public class BotController {
                         user.setSelectedUnit(null);
                         user.setMenu(Menu.MAIN);
                         userService.saveUser(user);
-                        sendBooksMenu(user);
+                        sendBooksMenu(user, null);
                     } else if (user != null) {
                         if (text.startsWith("/create") && user.getRole().equals(Role.ADMIN) && user.getMenu().equals(Menu.MAIN)) {
                             text = text.replace("/create", "").trim();
@@ -157,6 +156,11 @@ public class BotController {
                                 vocabularyService.getRandomWordByBook(user.getSelectedBook()) :
                                 vocabularyService.getRandomWord(user.getSelectedUnit());
                         sendInlineQuestion(user, vocabulary, Long.valueOf(update.getCallbackQuery().getMessage().getMessageId()));
+                    } else if (text.equals("home_page")) {
+                        user.setSelectedUnit(null);
+                        user.setMenu(Menu.MAIN);
+                        userService.saveUser(user);
+                        sendBooksMenu(user, Long.valueOf(update.getCallbackQuery().getMessage().getMessageId()));
                     } else {
                         AnswerCallbackQuery answerCallbackQuery = new AnswerCallbackQuery(update.getCallbackQuery().getId());
                         if (isUzb) {
@@ -179,7 +183,7 @@ public class BotController {
 
     }
 
-    private void sendBooksMenu(User user) {
+    private void sendBooksMenu(User user, Long messageId) {
         List<Book> bookList = bookService.getAll();
         String[][] books = new String[(bookList.size() + 1) / 2][2];
         for (int i = 0; i < bookList.size(); i++) {
@@ -187,7 +191,11 @@ public class BotController {
         }
         SendMessage sendMessage = new SendMessage(String.valueOf(user.getChatId()), "Kitobni tanlang");
         sendMessage.setReplyMarkup(botUtility.buildKeyboardButtons(books));
-        botUtility.sendMessage(sendMessage);
+        if (messageId == null)
+            botUtility.sendMessage(sendMessage);
+        else {
+            botUtility.sendMessage(sendMessage, user.getChatId(), messageId);
+        }
     }
 
     private void sendUnitsMenu(User user) {
@@ -204,10 +212,6 @@ public class BotController {
     }
 
     private void sendUnitTestMenu(User user) {
-        String[][] units = {{"⏫ Bosh sahifa"}};
-        SendMessage sendMessage = new SendMessage(String.valueOf(user.getChatId()), "Kerakli bo'limni tanlang");
-        sendMessage.setReplyMarkup(botUtility.buildKeyboardButtons(units));
-        botUtility.sendMessage(sendMessage);
         Vocabulary vocabulary = vocabularyService.getRandomWord(user.getSelectedUnit());
         sendInlineQuestion(user, vocabulary, null);
     }
@@ -220,10 +224,13 @@ public class BotController {
         List<InlineKeyboardButton> buttonRow2 = new ArrayList<>();
         InlineKeyboardButton button = new InlineKeyboardButton("Javobini ko'rish");
         InlineKeyboardButton button2 = new InlineKeyboardButton("\uD83C\uDFB2 Random word");
+        InlineKeyboardButton button3 = new InlineKeyboardButton("⏫ Bosh sahifa");
         button2.setCallbackData("random_word");
+        button3.setCallbackData("home_page");
         button.setCallbackData((isUzb ? "#uzb " : "") + vocabulary.getEng());
         buttonRow.add(button);
-        buttonRow2.add(button2);
+        buttonRow.add(button2);
+        buttonRow2.add(button3);
         keyboard.add(buttonRow);
         keyboard.add(buttonRow2);
         markup.setKeyboard(keyboard);

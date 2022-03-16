@@ -240,7 +240,7 @@ public class BotController {
         String wordText;
         if (isUzb) {
             String[] wordList = vocabulary.getUzb().split(", ");
-            wordText = wordList[(int) Math.floor(wordList.length)];
+            wordText = wordList[(int) Math.round((wordList.length-1)*Math.random())];
             wordText = wordText.substring(0, 1).toUpperCase() + wordText.substring(1);
         } else {
             wordText = vocabulary.getEng().substring(0, 1).toUpperCase() + vocabulary.getEng().substring(1);

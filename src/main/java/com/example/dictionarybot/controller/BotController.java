@@ -121,7 +121,7 @@ public class BotController {
                                     sendUnitsMenu(user);
                                     break;
                                 case BOOK_VIEW:
-                                    if (text.equals("\uD83C\uDFB2 Random word")) {
+                                    if (text.equals("Random word")) {
                                         Vocabulary vocabulary = vocabularyService.getRandomWordByBook(user.getSelectedBook());
                                         sendInlineQuestion(user, vocabulary, null);
                                         break;
@@ -146,7 +146,7 @@ public class BotController {
             }
             if (update.hasCallbackQuery()) {
                 User user = userService.getUser(update.getCallbackQuery().getFrom().getId());
-                if (update.getCallbackQuery().getMessage().getText().equals("\uD83C\uDFB2 Random word")) {
+                if (update.getCallbackQuery().getMessage().getText().equals("Random word")) {
                     Vocabulary vocabulary = user.getSelectedUnit() == null ?
                             vocabularyService.getRandomWordByBook(user.getSelectedBook()) :
                             vocabularyService.getRandomWord(user.getSelectedUnit());
@@ -181,7 +181,7 @@ public class BotController {
     private void sendUnitsMenu(User user) {
         List<Unit> unitList = unitService.getAllByBook(user.getSelectedBook());
         String[][] units = new String[(unitList.size() + 5) / 2][2];
-        units[(unitList.size() + 1) / 2][0] = "\uD83C\uDFB2 Random word";
+        units[(unitList.size() + 1) / 2][0] = "Random word";
         units[(unitList.size() + 3) / 2][0] = "⏫ Bosh sahifa";
         for (int i = 0; i < unitList.size(); i++) {
             units[i / 2][i % 2] = unitList.get(i).getName();
@@ -207,7 +207,7 @@ public class BotController {
         List<InlineKeyboardButton> buttonRow = new ArrayList<>();
         List<InlineKeyboardButton> buttonRow2 = new ArrayList<>();
         InlineKeyboardButton button = new InlineKeyboardButton("Javobini ko'rish");
-        InlineKeyboardButton button2 = new InlineKeyboardButton("\uD83C\uDFB2 Random word");
+        InlineKeyboardButton button2 = new InlineKeyboardButton("Random word");
         button.setCallbackData(isUzb ? vocabulary.getEng().substring(0, 1).toUpperCase() + vocabulary.getEng().substring(1) :
                 vocabulary.getUzb().substring(0, 1).toUpperCase() + vocabulary.getUzb().substring(1));
         buttonRow.add(button);

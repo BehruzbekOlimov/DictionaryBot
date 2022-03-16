@@ -52,6 +52,7 @@ public class BotController {
                             user = userService.save(update.getMessage().getFrom());
                             botUtility.sendMessage("Botga xush kelibsiz!", user.getChatId());
                         }
+                        user.setSelectedUnit(null);
                         user.setMenu(Menu.MAIN);
                         userService.saveUser(user);
                         sendBooksMenu(user);
@@ -92,7 +93,7 @@ public class BotController {
 
                         } else if (text.startsWith("/delete") && user.getRole().equals(Role.ADMIN) && user.getMenu().equals(Menu.BOOK_VIEW)) {
                             text = text.replace("/delete", "").trim();
-                            if (unitService.delete(user.getSelectedBook(),text)) {
+                            if (unitService.delete(user.getSelectedBook(), text)) {
                                 botUtility.sendMessage("Unit o'chirildi!", user.getChatId());
                             } else {
                                 botUtility.sendMessage("Unit o'chirilmadi!", user.getChatId());
@@ -100,7 +101,7 @@ public class BotController {
 
                         } else if (text.startsWith("/delete") && user.getRole().equals(Role.ADMIN) && user.getMenu().equals(Menu.UNIT_TEST)) {
                             text = text.replace("/delete", "").trim();
-                            if (vocabularyService.delete(user.getSelectedUnit(),text)) {
+                            if (vocabularyService.delete(user.getSelectedUnit(), text)) {
                                 botUtility.sendMessage("Lug'at o'chirildi!", user.getChatId());
                             } else {
                                 botUtility.sendMessage("Lug'at o'chirilmadi!", user.getChatId());
@@ -120,6 +121,11 @@ public class BotController {
                                     sendUnitsMenu(user);
                                     break;
                                 case BOOK_VIEW:
+                                    if (text.equals("\uD83C\uDFB2 Random word")) {
+                                        Vocabulary vocabulary = vocabularyService.getRandomWordByBook(user.getSelectedBook());
+                                        sendInlineQuestion(user, vocabulary, null);
+                                        break;
+                                    }
                                     Unit unit = unitService.getByNameAndBook(text, user.getSelectedBook());
                                     if (unit == null) {
                                         botUtility.sendMessage("Bunday unit mavjud emas!", user.getChatId());
@@ -131,21 +137,7 @@ public class BotController {
                                     sendUnitTestMenu(user);
                                     break;
                                 case UNIT_TEST:
-                                    if (text.equals("\uD83C\uDFB2 Random word")) {
-                                        boolean isUzb = Math.random() > 0.25;
-                                        Vocabulary vocabulary = vocabularyService.getRandomWord(user.getSelectedUnit());
-                                        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-                                        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
-                                        List<InlineKeyboardButton> buttonRow = new ArrayList<>();
-                                        InlineKeyboardButton button = new InlineKeyboardButton(EmojiParser.parseToUnicode("Javobini ko'rish"));
-                                        button.setCallbackData(isUzb ? vocabulary.getEng() : vocabulary.getUzb());
-                                        buttonRow.add(button);
-                                        keyboard.add(buttonRow);
-                                        markup.setKeyboard(keyboard);
-                                        SendMessage sendMessage = new SendMessage(String.valueOf(user.getChatId()), !isUzb ? vocabulary.getEng() : vocabulary.getUzb());
-                                        sendMessage.setReplyMarkup(markup);
-                                        botUtility.sendMessage(sendMessage);
-                                    }
+
                             }
                         }
                     }
@@ -153,11 +145,20 @@ public class BotController {
 
             }
             if (update.hasCallbackQuery()) {
-                String text = update.getCallbackQuery().getData().trim();
-                AnswerCallbackQuery answerCallbackQuery = new AnswerCallbackQuery(update.getCallbackQuery().getId());
-                answerCallbackQuery.setText(text);
-                answerCallbackQuery.setShowAlert(true);
-                botUtility.answerCallbackQuery(answerCallbackQuery);
+                User user = userService.getUser(update.getCallbackQuery().getFrom().getId());
+                if (update.getCallbackQuery().getMessage().getText().equals("\uD83C\uDFB2 Random word")) {
+                    Vocabulary vocabulary = user.getSelectedUnit() == null ?
+                            vocabularyService.getRandomWordByBook(user.getSelectedBook()) :
+                            vocabularyService.getRandomWord(user.getSelectedUnit());
+                    sendInlineQuestion(user, vocabulary, Long.valueOf(update.getCallbackQuery().getMessage().getMessageId()));
+                } else if (update.getCallbackQuery().getMessage().getText().equals("Javobini ko'rish")) {
+                    String text = update.getCallbackQuery().getData().trim();
+                    AnswerCallbackQuery answerCallbackQuery = new AnswerCallbackQuery(update.getCallbackQuery().getId());
+                    answerCallbackQuery.setText(text);
+                    answerCallbackQuery.setShowAlert(true);
+                    botUtility.answerCallbackQuery(answerCallbackQuery);
+                }
+
             }
         } catch (
                 Exception e) {
@@ -179,8 +180,9 @@ public class BotController {
 
     private void sendUnitsMenu(User user) {
         List<Unit> unitList = unitService.getAllByBook(user.getSelectedBook());
-        String[][] units = new String[(unitList.size() + 3) / 2][2];
-        units[(unitList.size() + 1) / 2][0] = "⏫ Bosh sahifa";
+        String[][] units = new String[(unitList.size() + 5) / 2][2];
+        units[(unitList.size() + 1) / 2][0] = "\uD83C\uDFB2 Random word";
+        units[(unitList.size() + 3) / 2][0] = "⏫ Bosh sahifa";
         for (int i = 0; i < unitList.size(); i++) {
             units[i / 2][i % 2] = unitList.get(i).getName();
         }
@@ -190,9 +192,35 @@ public class BotController {
     }
 
     private void sendUnitTestMenu(User user) {
-        String[][] units = {{"\uD83C\uDFB2 Random word"}, {"⏫ Bosh sahifa"}};
+        String[][] units = {{"⏫ Bosh sahifa"}};
         SendMessage sendMessage = new SendMessage(String.valueOf(user.getChatId()), "Kerakli bo'limni tanlang");
         sendMessage.setReplyMarkup(botUtility.buildKeyboardButtons(units));
         botUtility.sendMessage(sendMessage);
+        Vocabulary vocabulary = vocabularyService.getRandomWord(user.getSelectedUnit());
+        sendInlineQuestion(user, vocabulary, null);
+    }
+
+    private void sendInlineQuestion(User user, Vocabulary vocabulary, Long messageId) {
+        boolean isUzb = Math.random() > 0.33;
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        List<InlineKeyboardButton> buttonRow = new ArrayList<>();
+        List<InlineKeyboardButton> buttonRow2 = new ArrayList<>();
+        InlineKeyboardButton button = new InlineKeyboardButton("Javobini ko'rish");
+        InlineKeyboardButton button2 = new InlineKeyboardButton("\uD83C\uDFB2 Random word");
+        button.setCallbackData(isUzb ? vocabulary.getEng().substring(0, 1).toUpperCase() + vocabulary.getEng().substring(1) :
+                vocabulary.getUzb().substring(0, 1).toUpperCase() + vocabulary.getUzb().substring(1));
+        buttonRow.add(button);
+        buttonRow2.add(button2);
+        keyboard.add(buttonRow);
+        keyboard.add(buttonRow2);
+        markup.setKeyboard(keyboard);
+        SendMessage sendInlineMessage = new SendMessage(String.valueOf(user.getChatId()), !isUzb ? vocabulary.getEng().substring(0, 1).toUpperCase() + vocabulary.getEng().substring(1) :
+                vocabulary.getUzb().substring(0, 1).toUpperCase() + vocabulary.getUzb().substring(1));
+        sendInlineMessage.setReplyMarkup(markup);
+        if (messageId != null)
+            botUtility.sendMessage(sendInlineMessage, user.getChatId(), messageId);
+        else
+            botUtility.sendMessage(sendInlineMessage);
     }
 }

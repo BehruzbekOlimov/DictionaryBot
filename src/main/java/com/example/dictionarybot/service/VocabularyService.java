@@ -1,5 +1,6 @@
 package com.example.dictionarybot.service;
 
+import com.example.dictionarybot.entity.Book;
 import com.example.dictionarybot.entity.Unit;
 import com.example.dictionarybot.entity.Vocabulary;
 import com.example.dictionarybot.repositories.VocabularyRepository;
@@ -26,6 +27,9 @@ public class VocabularyService {
 
     public Vocabulary getRandomWord(Unit selectedUnit) {
         return vocabularyRepository.getRandomByUnit(selectedUnit.getId());
+    }
+    public Vocabulary getRandomWordByBook(Book book) {
+        return vocabularyRepository.getRandomByBook(book.getId());
     }
 
     public boolean delete(Unit unit, String eng){

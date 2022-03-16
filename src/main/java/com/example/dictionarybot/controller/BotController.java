@@ -21,6 +21,7 @@ import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.util.ArrayList;
@@ -207,7 +208,9 @@ public class BotController {
             units[i / 2][i % 2] = unitList.get(i).getName();
         }
         SendMessage sendMessage = new SendMessage(String.valueOf(user.getChatId()), "Kerakli darsni tanlang");
-        sendMessage.setReplyMarkup(botUtility.buildKeyboardButtons(units));
+        ReplyKeyboardMarkup keyboardMarkup = botUtility.buildKeyboardButtons(units);
+        keyboardMarkup.setSelective(true);
+        sendMessage.setReplyMarkup(keyboardMarkup);
         botUtility.sendMessage(sendMessage);
     }
 

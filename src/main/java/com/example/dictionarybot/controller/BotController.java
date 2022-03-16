@@ -220,7 +220,7 @@ public class BotController {
     }
 
     private void sendInlineQuestion(User user, Vocabulary vocabulary, Long messageId) {
-        boolean isUzb = Math.random() > 0.33;
+        boolean isUzb = Math.random() > 0.25;
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
         List<InlineKeyboardButton> buttonRow = new ArrayList<>();

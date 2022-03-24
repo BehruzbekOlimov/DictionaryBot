@@ -7,6 +7,8 @@ import com.example.dictionarybot.repositories.VocabularyRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @AllArgsConstructor
 public class VocabularyService {
@@ -26,29 +28,32 @@ public class VocabularyService {
     }
 
     public Vocabulary getRandomWord(Unit selectedUnit) {
-        return vocabularyRepository.getRandomByUnit(selectedUnit.getId());
-    }
-    public Vocabulary getRandomWordByBook(Book book) {
-        return vocabularyRepository.getRandomByBook(book.getId());
+        List<Vocabulary> vocabularyList = vocabularyRepository.getAllByUnit(selectedUnit.getId());
+        return vocabularyList.get((int) Math.round(Math.random() * vocabularyList.size()));
     }
 
-    public boolean delete(Unit unit, String eng){
+    public Vocabulary getRandomWordByBook(Book book) {
+        List<Vocabulary> vocabularyList = vocabularyRepository.getAllByBook(book.getId());
+        return vocabularyList.get((int) Math.round(Math.random() * vocabularyList.size()));
+    }
+
+    public boolean delete(Unit unit, String eng) {
         try {
             Vocabulary vocabulary = vocabularyRepository.findByUnitAndEng(unit, eng).orElse(null);
             if (vocabulary == null)
                 return false;
             vocabularyRepository.delete(vocabulary);
             return true;
-        }catch (Exception ignored){
+        } catch (Exception ignored) {
             return false;
         }
     }
 
-    public Vocabulary findByUnit(Unit unit, String eng){
+    public Vocabulary findByUnit(Unit unit, String eng) {
         return vocabularyRepository.findByUnitAndEng(unit, eng).orElse(null);
     }
 
-    public Vocabulary findByBook(Book book, String eng){
+    public Vocabulary findByBook(Book book, String eng) {
         return vocabularyRepository.findByBookAndEng(book.getId(), eng);
     }
 }

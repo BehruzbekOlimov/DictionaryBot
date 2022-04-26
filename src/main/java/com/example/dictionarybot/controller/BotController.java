@@ -246,7 +246,7 @@ public class BotController {
             wordText = vocabulary.getEng().substring(0, 1).toUpperCase() + vocabulary.getEng().substring(1);
         }
 
-        SendMessage sendInlineMessage = new SendMessage(String.valueOf(user.getChatId()), wordText + " - ||"+(!isUzb?vocabulary.getUzb().substring(0, 1).toUpperCase() + vocabulary.getUzb().substring(1):vocabulary.getEng().substring(0, 1).toUpperCase() + vocabulary.getEng().substring(1))+"||");
+        SendMessage sendInlineMessage = new SendMessage(String.valueOf(user.getChatId()), wordText + " \\- ||"+(!isUzb?vocabulary.getUzb().substring(0, 1).toUpperCase() + vocabulary.getUzb().substring(1).replace(",","\\,"):vocabulary.getEng().substring(0, 1).toUpperCase() + vocabulary.getEng().substring(1))+"||");
         sendInlineMessage.setParseMode("MarkdownV2");
         sendInlineMessage.setReplyMarkup(markup);
         if (messageId != null)
